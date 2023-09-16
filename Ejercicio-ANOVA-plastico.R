@@ -15,19 +15,19 @@ sd(data$resistencia[plastico == "A"])
 
 shapiro.test(data$resistencia[plastico == "B"])
 sd(data$resistencia[plastico == "B"])
-#Los datos del plastico A se adaptan a una distribucion t-student con un p-valor de 0.81        
+#Los datos del plastico B se adaptan a una distribucion t-student con un p-valor de 0.81        
       
 shapiro.test(data$resistencia[plastico == "C"])
 sd(data$resistencia[plastico == "C"])
-#Los datos del plastico A se adaptan a una distribucion t-student con un p-valor de 0.51        
+#Los datos del plastico C se adaptan a una distribucion t-student con un p-valor de 0.51        
 
 shapiro.test(data$resistencia[plastico == "D"])
 sd(data$resistencia[plastico == "D"])
-#Los datos del plastico A se adaptan a una distribucion t-student con un p-valor de 0.88       
+#Los datos del plástico D se adaptan a una distribucion t-student con un p-valor de 0.88       
 
 library(car)
 leveneTest(data$resistencia, as.factor(data$plastico))
-#Con un p-valor de 0.29 no se rechaza la ipotesis nula, las varianzas son similares
+#Con un p-valor de 0.29 no se rechaza la HipÓtesis nula, las varianzas son similares
 
 model <- aov(resistencia~plastico)
 print(model)
