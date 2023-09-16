@@ -1,0 +1,91 @@
+---
+title: "Test de Friedmann"
+author: "Henry Saenz y Juan S. Quintana"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Test de Friedman
+El test de Friedman es la alternativa no paramétrica a la prueba de comparación de varianzas ANOVA cuando los datos que se emplean son dependientes o pareados. Para el test de Friedman se asume la comparación de medianas de más de dos grupos en lugar de comparar sus medias. El test de Friedman es adecuado cuando el tipo de datos de la variable dependiente es categórico ordinal, es decir, poseen un orden natural y son cuando los datos son pareados. 
+
+El test de Friedman genera un estadístico conocido como Fr o Q que se distribuye:
+
+- Si el número total de individuos por grupo (N) es mayor de 10, la distribución de Fr se aproxima a $X^2$ con $k-1$ grados de libertad (Siendo $k$ el número de grupos a comparar)
+- Si el número de individuos por grupo es menor de 10, se recurre a tablas con los valores de significancia para un test de Friedman.
+
+El test de Friedman posee las siguientes hipótesis:
+
+- H0: No hay diferencias significativas entre los grupos.
+- H1: Al menos dos de los grupos poseen diferencias significativas entre sí.
+
+### Ejemplo
+
+```{r datos}
+valoracion <- c( 9, 5, 2, 6, 3, 1, 5, 5, 5, 11, 5, 1, 8, 4, 3, 10, 4, 1, 7, 3, 4 )
+hora <- factor( rep( c( "mañana", "tarde", "noche" ), 7 ) )
+sujeto <- factor( rep( 1:7, each = 3 ) )
+datos <- data.frame( valoracion, hora, sujeto )
+tail(datos)
+```
+#### Mediana
+```{r median, echo = FALSE}
+by(data = datos$valoracion, INDICES = datos$hora, FUN = median)
+```
+
+### Análisis descriptivo
+En el gráfico podemos evidenciar que las medianas de todos los grupos (mañana, tarde y noche) son diferentes (8, 4, 2), por lo que se puede sospechar que hay al menos dos grupos con diferencias significativas entre los mismos y al tratarse de esclas de valoración (1-11) no se emplea ANOVA sino el test de Friedman. 
+
+```{r boxplot, echo=FALSE}
+library(ggplot2)
+ggplot(data = datos, mapping = aes(x = hora, y = valoracion, colour = hora)) +
+    geom_boxplot() +
+    theme_bw() +
+    coord_flip()+
+    theme(legend.position = "none") 
+```
+
+
+## Test de Friedman
+De acuerdo al resultado del test (p-valor < 0.05) se tiene evidencia necesaria para rechazar la hipótesis nula, es decir, al menos uno de los dos grupos poseen diferencias significativas.
+
+```{r friedman, message=FALSE}
+friedman.test(valoracion, hora, sujeto)
+
+```
+
+Posterior al test, se realiza una comparación múltiple entre los tres grupos mediante el test pareado de wilcox
+
+#### Comparaciones múltiples
+
+```{r wilcox, message=FALSE}
+suppressWarnings(pairwise.wilcox.test(datos$valoracion, datos$hora, paired = TRUE, p.adjust.method = "holm"))
+```
+
+#### Conclusiones
+A pesar del resultado del test de Friedman, el cual indica una diferencia significativa, se concluye que las comparaciones por pares mediante el test Wilcox con corrección de holm no encuentra ninguna diferencia significativa.
+
+## Ejercicio de tarea
+```{r tarea}
+set.seed(123)  # Para reproducibilidad
+
+datos <- data.frame(
+  Algoritmo = rep(c("A", "B", "C"), each = 3),
+  Carga_Trabajo = rep(c("Baja", "Media", "Alta"), times = 3),
+  Rendimiento = round(runif(9, min = 1, max = 10), 2)
+)
+
+# Mostrar los datos
+datos
+```
+
+
+Utilizando el conjunto de datos proporcionado ('datos'), plantea y responde las siguientes preguntas:
+
+1. ¿Cuál es la hipótesis nula (H0) y la hipótesis alternativa (H1) para el test de Friedman en este contexto?
+2. Realiza el test de Friedman para determinar si existe una diferencia significativa en el rendimiento de los algoritmos bajo las diferentes condiciones de carga de trabajo. Utiliza un nivel de significancia del 0.05.
+3. Si el test de Friedman muestra que hay diferencias significativas, realiza pruebas post-hoc (por ejemplo, el test de Nemenyi) para identificar qué pares de algoritmos difieren significativamente en rendimiento bajo diferentes condiciones de carga de trabajo.
+4. Presenta tus conclusiones y discute los resultados obtenidos.
